@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div {
+  width: 1339px;
+  height: 607px;
+ 
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div onclick="showCoords(event)"><p id="demo"></p></div>
+<script>
+function showCoords(event) {
+  
+  var sX = event.screenX;
+  
+  var sY = event.screenY;
+ 
+  var coords = "X: " + sX + ", Y : " + sY;
+  document.getElementById("demo").innerHTML = coords ;
+}
+</script>
+
+</body>
+</html>

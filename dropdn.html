@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript">	
+   function team() 
+   {       	
+    cric= ['finch', 'watson', 'warner', 'maxwell'];
+    var stark = document.getElementById('aus')
+     for(i=0; i<cric.length; i++)
+     {   	
+     var warne=	document.createElement('option')
+      warne.text=cric[i];
+      stark.add(warne, i+1)
+     }
+   }
+</script>
+</head>
+<body onload="team()">
+<select id="aus">
+</select>
+</body>
+</html>
