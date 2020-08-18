@@ -1,0 +1,299 @@
+1.Split a String
+
+package exam.sys.out;
+
+public class SplitString {
+
+	public static void main(String[] args) {
+		String str = "This Is Java Programming";
+        String[] split = str.split(" ");
+ 
+        for (String a : split)
+       
+            System.out.println(a);
+
+	}
+
+}
+
+===============================================================================================
+2. Split and Reverse the Split String 
+
+package exam.sys.out;
+
+public class ReverseBreak {
+		
+	
+	public static void main(String[] args){
+		String d="This Is Java Programming";
+		String[] f = d.split(" ");
+		        for (int i=0;i<f.length;i++) {
+		        String h=f[i];
+		        StringBuilder sb=new StringBuilder(h);
+		        sb.reverse();
+		        String g=sb.toString();
+		        System.out.println(g);
+	}
+	}
+}
+
+====================================================================================================
+3. class Car
+package exam.sys.out;
+
+public class Cars {
+
+	 int ManfYear;
+	  private String name;
+	public String getName() {
+	return name;
+	}
+	public void setName(String name) {
+	this.name = name;
+	}
+	public int getManfYear() {
+	return ManfYear;
+	}
+	public void setManfYear(int manfYear) {
+	ManfYear = manfYear;
+	}
+	public Cars(String name, int manfYear) {
+	super();
+	this.name = name;
+	ManfYear = manfYear;
+	}
+	@Override
+	public String toString() {
+	return "Car [name=" + name + ", ManfYear=" + ManfYear + "]";
+	}
+	public Cars() {
+
+	}
+	 
+	}
+--------------------------------------------------------------------------------------
+    	class ShowRoom
+	
+	package exam.sys.out;
+
+import java.util.List;
+
+public class ShowRoom {
+
+	String Sroomname;
+	String addr;
+	List<Cars> cars;
+	public String getSroomname() {
+		return Sroomname;
+	}
+	public void setSroomname(String Sroomname) {
+		this.Sroomname = Sroomname;
+	}
+	public String getAddr() {
+		return addr;
+	}
+	public void setAddr(String addr) {
+		this.addr = addr;
+	}
+	public List<Cars> getCars() {
+		return cars;
+	}
+	public void setCars(List<Cars> cars) {
+		this.cars = cars;
+	}
+	public ShowRoom(String Sroomname, String addr, List<Cars> cars) {
+		super();
+		this.Sroomname = Sroomname;
+		this.addr = addr;
+		this.cars = cars;
+	}
+	@Override
+	public String toString() {
+		return "ShowRoom [Sroomname=" + Sroomname + ", addr=" + addr + ", cars=" + cars + "]";
+	}
+	public ShowRoom() {
+		
+	}
+	}
+------------------------------------------------------------------------------------------------------
+3.a Search Based on ShowRoom
+
+
+
+package exam.sys.out;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MainClass {
+Map<String,List<Cars>> carstore;
+public void displayCarsByShowroomname(String Showroomname)
+{
+List<Cars> cars=carstore.get(Showroomname);
+for(Cars car:cars){
+System.out.println(car);
+}
+
+}
+public static void main(String[] args) {
+Cars c1=new Cars("Nano",1985);
+Cars c2=new Cars("Jaguar",1986);
+Cars c3=new Cars("Swift",1987);
+Cars c4=new Cars("Benz",1988);
+List<Cars> cars=new ArrayList<Cars>();
+          cars.add(c1);
+          cars.add(c2);
+          cars.add(c3);
+          cars.add(c4);
+ ShowRoom showroom=new ShowRoom("Lakshmi-motors","Guntur",cars);
+  Cars c5=new Cars("Skoda",1984);
+  Cars c6=new Cars("KIA",1985);
+  Cars c7=new Cars("Ertiga",1986);
+  Cars c8=new Cars("Bmw",1980);
+  List<Cars> cars1=new ArrayList<Cars>();
+   cars1.add(c5);
+   cars1.add(c6);
+   cars1.add(c7);
+   cars1.add(c8);
+   ShowRoom showroom1=new ShowRoom("Dasarath-motors","Vijayawada",cars1); 
+
+   MainClass main= new MainClass();
+  main.carstore=new HashMap<String,List<Cars>>();
+  main.carstore.put(showroom.getSroomname(), showroom.getCars());
+  main.carstore.put(showroom1.getSroomname(),showroom1.getCars());
+  main.displayCarsByShowroomname("Dasarath-motors");
+
+}
+}
+---------------------------------------------------------------------------------------------------
+3.b.i Sorting By Manufactured Year
+
+package exam.sys.out;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class SortMnfy {
+	public static void main(String[] args) {
+		List<Integer> Car=new ArrayList<Integer>();
+		Car.add(1995);
+		Car.add(1994);
+		Car.add(1993);
+		Car.add(1991);
+		Car.add(1999);
+		Collections.sort(Car);
+		for(int x:Car) {
+		System.out.println(x);
+
+		}
+
+		}
+
+}
+---------------------------------------------------------------------------------------------------
+3.b.ii Sort by carname
+
+
+package exam.sys.out;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class SortCar {
+
+	public static void main(String[] args) {
+		List<String> Car=new ArrayList<String>();
+		Car.add("Nano");
+		Car.add("Swift");
+		Car.add("Tata");
+		Car.add("Benz");
+		Car.add("Kia");
+		Collections.sort(Car);
+		for(String x:Car) {
+		System.out.println(x);
+		}
+
+
+		}
+
+}
+---------------------------------------------------------------------------------------------------
+3.c 
+
+package exam.sys.out;
+
+import java.util.Comparator;
+
+public class YearSort implements Comparator<Cars> {
+
+	@Override
+	public int compare(Cars o1, Cars o2) {		
+		return o1.getManfYear() - o2.getManfYear();
+	}
+
+}
+
+--------------------------
+ 
+package exam.sys.out;
+
+
+import java.util.Comparator;
+
+public class CarnSort implements Comparator<Cars> {
+
+	@Override
+	public int compare(Cars m1, Cars m2) {		
+		return m1. getName().compareTo(m2. getName());
+	}
+}
+
+
+
+====================================================================================================
+4 Creating Own Exception
+
+class==
+
+package exam.sys.out;
+
+public class UnCheckedException extends Exception {
+		public UnCheckedException() {	
+		}
+	}
+	 class Marks{
+		 public void examMarks(int marks) throws UnCheckedException { 
+			 if(marks > 100 || marks < 0) {
+				 throw new UnCheckedException();	 
+			 }
+			 else {	 
+				 System.out.println("Student passed");
+			 }
+		 }
+}
+
+
+--------------------------------------------------------------
+Main Class
+
+
+package exam.sys.out;
+
+public class MainUnChecked {
+		public static void main(String[] args) {
+			Marks m=new Marks();
+			try {
+				m.examMarks(10);
+			}
+			catch (UnCheckedException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	}
+==========================================================================================================================================
