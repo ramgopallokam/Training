@@ -9,6 +9,8 @@ sname varchar(20),
 sem int,
 branch varchar(20)
 );
+
+
 --------------------------------------
 ---Attendance table-----
 
