@@ -1,48 +1,10 @@
-package com.pack.model;
+package com.myapp.pack;
+public class Book implements Comparable<Book>{
+	
 
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
-
-@Entity
-public class Book {
-
-@Id
 private int isbn;
 private String title;
-private String author;
-
-@Column(name="book_date")
-private Date date;
-
-
-@ElementCollection
-List<Distributor> distList;
-
-
-
-public List<Distributor> getDistList() {
-	return distList;
-}
-public void setDistList(List<Distributor> distList) {
-	this.distList = distList;
-}
-
-public Date getDate() {
-return date;
-}
-public void setDate(Date date) {
-this.date = date;
-}
+private String authorName;
 public int getIsbn() {
 return isbn;
 }
@@ -55,39 +17,28 @@ return title;
 public void setTitle(String title) {
 this.title = title;
 }
-public String getAuthor() {
-return author;
+public String getAuthorName() {
+return authorName;
 }
-public void setAuthor(String author) {
-this.author = author;
+public void setAuthorName(String authorName) {
+this.authorName = authorName;
 }
-public Book(int isbn, String title, String author) {
+public Book(int isbn, String title, String authorName) {
 super();
 this.isbn = isbn;
 this.title = title;
-this.author = author;
-}
-
-
-
-
-public Book(int isbn, String title, String author, Date date) {
-super();
-this.isbn = isbn;
-this.title = title;
-this.author = author;
-this.date = date;
-}
-public Book() {
-// TODO Auto-generated constructor stub
+this.authorName = authorName;
 }
 @Override
 public String toString() {
-	return "Book [isbn=" + isbn + ", title=" + title + ", author=" + author + ", date=" + date + "]";
+return "Book [isbn=" + isbn + ", title=" + title + ", authorName=" + authorName + "]";
 }
 
-
-
+public Book(){}
+@Override
+public int compareTo(Book o) {
+return o.isbn - this.isbn;  
+}
 
 
 
