@@ -1,0 +1,1180 @@
+                            Sba4-1
+
+======================================================================================================
+
+----Main class Player------
+
+package com.pack.apps.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+	@Entity
+	public class Player {
+	@Id
+	private int playerId;
+	private String playerName;
+	private String playerTeam;
+	public int getPlayerId() {
+		return playerId;
+	}
+	public void setPlayerId(int playerId) {
+		this.playerId = playerId;
+	}
+	public String getPlayerName() {
+		return playerName;
+	}
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
+	}
+	public String getPlayerTeam() {
+		return playerTeam;
+	}
+	public void setPlayerTeam(String playerTeam) {
+		this.playerTeam = playerTeam;
+	}
+	public Player(int playerId, String playerName, String playerTeam) {
+		super();
+		this.playerId = playerId;
+		this.playerName = playerName;
+		this.playerTeam = playerTeam;
+	}
+	
+	public Player() {
+		// TODO Auto-generated constructor stub
+	}
+	@Override
+	public String toString() {
+		return "Player [playerId=" + playerId + ", playerName=" + playerName + ", playerTeam=" + playerTeam + "]";
+	}
+	
+	 bgcolor="#e3b5eb"
+}
+
+====================================================================================================================================================
+ 
+------PlayerDao--------
+
+package com.pack.apps.dao;
+
+import java.util.ArrayList;
+
+import javax.transaction.Transactional;
+
+import org.hibernate.Criteria;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.pack.apps.demo.Player;
+
+@Transactional
+public class PlayerDao {
+	@Autowired
+	SessionFactory factory;
+	public PlayerDao() {
+		// TODO Auto-generated constructor stub
+	}
+	public PlayerDao(SessionFactory factory) {
+		super();
+		this.factory = factory;
+	}
+	
+	public String createPlayer(Player player) {
+		try {
+			Session session=factory.getCurrentSession();
+			session.save(player);
+			return "Player created";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Cannot create player";
+	}
+	
+	public Player getPlayerById(int playerId) {
+		try {
+			Session session=factory.getCurrentSession();
+			Player player=(Player)session.get(Player.class, playerId);
+			return player;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public String updatePlayerById(Player player) {
+		try {
+			Session session=factory.getCurrentSession();
+			session.update("Player", player);
+			return "Player Updated";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Cannot Update";
+	}
+	
+	public ArrayList<Player> searchPlayerById(int playerId){
+		Session session=factory.openSession();
+		Criteria ct=session.createCriteria(Player.class);
+		ct.add(Restrictions.eq("playerId", playerId));
+		
+		ArrayList<Player> player=(ArrayList<Player>) ct.list();
+		return player;
+	}
+	
+	public ArrayList<Player> searchPlayerByName(String playerName){
+		Session session=factory.openSession();
+		Criteria ct=session.createCriteria(Player.class);
+		ct.add(Restrictions.ilike("playerName", playerName));
+		
+		ArrayList<Player> player=(ArrayList<Player>) ct.list();
+		return player;
+	}
+	
+	public ArrayList<Player> searchPlayerByTeam(String playerTeam){
+		Session session=factory.openSession();
+		Criteria ct=session.createCriteria(Player.class);
+		ct.add(Restrictions.ilike("playerTeam", playerTeam));
+		
+		ArrayList<Player> player=(ArrayList<Player>) ct.list();
+		return player;
+	}
+	
+	public String deletePlayerById(int playerId) {
+		try {
+			Session session=factory.getCurrentSession();
+			Query query=session.createQuery("delete from Player p  where p.playerId=:playerId");
+			query.setParameter("playerId", playerId);
+			int res=query.executeUpdate();
+			if(res>0)
+				return "Entry Deleted";
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Cannot Delete";
+	}
+	
+	public String deletePlayerByName(String playerName) {
+		try {
+			Session session=factory.getCurrentSession();
+			Query query=session.createQuery("delete from Player p  where p.playerName=:playerName");
+			query.setParameter("playerName", playerName);
+			int res=query.executeUpdate();
+			if(res>0)
+				return "Entry Deleted";
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Cannot Delete";
+	}
+	
+	public ArrayList<Player> viewAllPlayers() {
+		try {
+			Session session=factory.getCurrentSession();
+			Query query=session.createQuery("from Player");
+			ArrayList<Player> player=(ArrayList<Player>)query.list();
+			return player;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+}
+
+============================================================================================================================================
+
+------Home Controller----
+
+
+package com.pack.apps;
+
+
+import java.util.ArrayList;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.pack.apps.dao.PlayerDao;
+import com.pack.apps.demo.Player;
+
+
+@Controller
+public class HomeController {
+	
+	@Autowired
+	PlayerDao dao;
+	
+	
+	
+	@RequestMapping(value = "/")
+	public String home(Model model) {
+		return "home";
+	}
+	@RequestMapping(value = "/home")
+	public String homee(Model model) {
+		return "home";
+	}
+	
+	
+	
+	
+	
+	@RequestMapping(value = "/createPlayerPage")
+	public String createPlayerPage(Model model) {
+		return "createPlayerPage";
+	}
+	
+	@RequestMapping(value = "/updatePlayerPage")
+	public String updatePlayerPage(Model model) {
+		return "updatePlayerPage";
+	}
+	
+	@RequestMapping(value = "/searchDirectoryPage")
+	public String searchDirectoryPage(Model model) {
+		return "searchDirectoryPage";
+	}
+	
+	@RequestMapping(value = "/deleteEntryPage")
+	public String deleteEntryPage(Model model) {
+		return "deleteEntryPage";
+	}
+	
+	
+	
+	
+	
+	@RequestMapping(value = "/createPlayer")
+	public String createPlayer(Model model,@ModelAttribute Player player) {
+		String status=dao.createPlayer(player);
+		return "createSuccess";
+	}
+	
+	
+	int playerId=0;
+	
+	@RequestMapping(value="/searchForUpdate")
+	public String searchForUpdate(Model model,@RequestParam("playerId") String playerId) {
+		int pId=Integer.parseInt(playerId);
+		this.playerId=pId;
+		Player player=dao.getPlayerById(pId);
+		model.addAttribute(player);
+		return "updatePlayerPage";
+	}
+	
+	@RequestMapping(value="/updatePlayer")
+	public String updatePlayer(@ModelAttribute Player player){
+		player.setPlayerId(playerId);
+		dao.updatePlayerById(player);
+		return "updateSuccess";
+	}
+	
+	
+	
+	@RequestMapping(value="/searchPlayerByIdPage")
+	public String searchPlayerByIdPage(Model model) {
+		return "searchPlayerByIdPage";
+	}
+	@RequestMapping(value="/searchPlayerByNamePage")
+	public String searchPlayerByNamePage(Model model) {
+		return "searchPlayerByNamePage";
+	}
+	@RequestMapping(value="/searchPlayerByTeamPage")
+	public String searchPlayerByTeamPage(Model model) {
+		return "searchPlayerByTeamPage";
+	}
+	@RequestMapping(value="/viewAllPlayers")
+	public String viewAllPlayers(Model model) {
+		ArrayList<Player> player=dao.viewAllPlayers();
+		model.addAttribute("player", player);
+		return "displaySearchResult";
+	}
+	
+	
+	@RequestMapping(value="/searchPlayerById")
+	public String searchPlayerById(Model model,@RequestParam("playerId") String playerId) {
+		ArrayList<Player> player=dao.searchPlayerById(Integer.parseInt(playerId));
+		model.addAttribute("player", player);
+		return "displaySearchResult";
+	}
+	
+	@RequestMapping(value="/searchPlayerByName")
+	public String searchPlayerByName(Model model,@RequestParam("playerName") String playerName) {
+		ArrayList<Player> player=dao.searchPlayerByName(playerName);
+		model.addAttribute("player", player);
+		return "displaySearchResult";
+	}
+	
+	@RequestMapping(value="/searchPlayerByTeam")
+	public String searchPlayerByTeam(Model model,@RequestParam("playerTeam") String playerTeam) {
+		ArrayList<Player> player=dao.searchPlayerByTeam(playerTeam);
+		model.addAttribute("player", player);
+		return "displaySearchResult";
+	}
+	
+	
+	@RequestMapping(value="/deletePlayerByIdPage")
+	public String deletePlayerByIdPage(Model model) {
+		return "deletePlayerByIdPage";
+	}
+	@RequestMapping(value="/deletePlayerByNamePage")
+	public String deletePlayerByNamePage(Model model) {
+		return "deletePlayerByNamePage";
+	}
+	
+	
+	@RequestMapping(value="/deletePlayerById")
+	public String deletePlayerById(Model model,@RequestParam("playerId") String playerId) {
+		dao.deletePlayerById(Integer.parseInt(playerId));
+		return "deleteSuccess";
+	}
+	
+	@RequestMapping(value="/deletePlayerByName")
+	public String deletePlayerByName(Model model,@RequestParam("playerName") String playerName) {
+		dao.deletePlayerByName(playerName);
+		return "deleteSuccess";
+	}
+	
+	
+	
+}
+	
+======================================================================================================================================
+
+
+All Jsp files for home,Creation,Deletion,Searching and Updation
+
+
+----------home.jsp----------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+} 
+}
+</style>
+</head>
+<body bgcolor="#e3b5eb" class="images">
+<br>
+<!-- 
+<img alt="govno" src="C:\Users\rlokam\Documents\workspace-sts-3.9.9.RELEASE\SbaTask\src\main\webapp\WEB-INF\views\paint.jpg" style="width: 400px; height: 300px;" position: absolute;>
+ -->
+<center>
+<div style="background-color: white" >
+<font face="Trebuchet MS" size="8" color="blue">Welcome </font>
+</div>
+<div style="background-color: cyan;width: 550px;height: 430px">
+<br><br>
+<form action="createPlayerPage">
+<input type="submit" value="   Create Player  ">
+</form>
+<form action="deleteEntryPage">
+<input type="submit" value="     Deletion      ">
+</form>
+<form action="updatePlayerPage">
+<input type="submit" value="        Updation ">
+</form>
+<form action="searchDirectoryPage">
+<input type="submit" value="     Searching       ">
+</form>
+
+</div>
+</center>
+</body>
+</html>
+--------------------------------------------------------------------------------------------
+
+---------creating player---------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Create Player</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: green;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: pink;
+color: red;
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+</head>
+<body bgcolor="#a75cb8">
+<br>
+<center>
+<div style="background-color: #1f095e">
+<font face="Trebuchet MS" size="8" color="white">Wanna create your player</font>
+</div>
+<div style="background-color: white;width: 550px;height: 450px">
+<br>
+<font face="Trebuchet MS" size="5">Then fill the details </font>
+
+<form action="createPlayer">
+<br>
+<font face="Trebuchet MS">Player ID:</font><br><input type="text" name="playerId" >
+<br><br>
+<font face="Trebuchet MS">Name:</font><br><input type="text" name="playerName" >
+<br><br>
+
+<font face="Trebuchet MS">Sports Stream:</font><br><input type="text" name="playerTeam" >
+
+<br><br>
+<input type="submit" value="Create">
+</form>
+
+
+</div>
+</center>
+</body>
+</html>
+------------------------------------------------------------------------------------
+
+--------CreationSuccess-----------
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Player Created</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: orange;
+border-color: white;
+border-width: 2px solid black;
+text-decoration: none;
+color: black;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: navy;
+color: white;
+}
+</style>
+</head>
+<body bgcolor="#bda6ff">
+<center>
+<br><br><br><br>
+<font face="Trebuchet MS" size="6" color="white"><b>Woohoo!!! Player Created Successfully...!</b></font>
+<br><br>
+<form action="home">
+<input type="submit" value="Home">
+</form>
+
+</center>
+</body>
+</html>
+
+----------------------------------------------------------------------------------------------------
+for deletion-
+
+-------main delete page---------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Delete Player</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: navy;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+
+</style>
+</head>
+<body bgcolor="Pink">
+<br>
+<center>
+
+<div style="background-color: green">
+<font face="Trebuchet MS" size="8" color="white">Delete Player</font>
+</div>
+<br>
+<div style="background-color: red;width: 550px;height: 270px">
+<br><br>
+<form action="deletePlayerByIdPage">
+<input type="submit" value="   Delete By ID   ">
+</form>
+<br>
+<form action="deletePlayerByNamePage">
+<input type="submit" value="Delete By Name">
+</form>
+</div>
+</center>
+</body>
+</html>
+-----------------------------------------------------------------------------------------------
+
+---------delete by id-----------
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Delete Entry</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: black;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: white;
+color: black;
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+</head>
+<body bgcolor="powderblue">
+<br>
+<center>
+<div style="background-color: #66654b">
+<font face="Trebuchet MS" size="8" color="red">Delete An Entry</font>
+</div>
+<div style="background-color: white;width: 550px;height: 450px">
+<br><br><br>
+<font face="Trebuchet MS" size="5">Enter Player ID</font>
+
+<form action="deletePlayerById">
+<br>
+<input type="text" name="playerId" >
+<br>
+<input type="submit" value="Delete">
+</form>
+</div>
+
+</body>
+</html>
+
+----------------------------------------------------------------------------------------------
+
+---------delete by name---------------
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Delete Entry</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #b36680;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: white;
+color: black;
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+</head>
+<body bgcolor="#b36680">
+<br>
+<center>
+<div style="background-color: #207b85">
+<font face="Trebuchet MS" size="8" color="white">Delete An Entry</font>
+</div>
+<div style="background-color: red;width: 550px;height: 450px">
+<br><br><br>
+<font face="Trebuchet MS" size="5">Enter Player Name</font>
+
+<form action="deletePlayerByName">
+<br>
+<input type="text" name="playerName">
+<br>
+<input type="submit" value="Delete">
+</form>
+</div>
+</body>
+</html>
+----------------------------------------------------------------------------------------------------
+
+----deletion success-------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Player Delete</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: white;
+border-color: white;
+border-width: 2px solid black;
+text-decoration: none;
+color: black;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: black;
+color: white;
+}
+</style>
+</head>
+<body bgcolor="navy">
+<center>
+<br><br><br><br>
+<font face="Trebuchet MS" size="6" color="white"><b>Player Deleted :( </b></font>
+<br><br>
+<form action="home">
+<input type="submit" value="return to lobby">
+</form>
+
+</center>
+</body>
+</html>
+
+---------------------------------------------------------------------------------------------------------------------
+
+
+------------Displaying Search result------------
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Players</title>
+<style>
+#players {
+  font-family: "Trebuchet MS";
+  border-collapse: collapse;
+  width: 75%;
+}
+#players td, #players th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+#players tr:nth-child(even){background-color: #1eeb17;}
+#players tr:nth-child(odd){background-color: #482b9e;}
+#players tr:hover {background-color: #ddd;}
+#players th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #000000;
+  color: white;
+}
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: white;
+border-color: white;
+border-width: 2px solid black;
+text-decoration: none;
+color: black;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: black;
+color: white;
+}
+</style>
+</head>
+<body bgcolor="#990f0f">
+<center>
+	<font face="Trebuchet MS" size="6" color="white">Players found</font>
+</center>
+<br>
+<table id="players" align="left">
+<tr> <th> Player ID </th> <th> Name </th> <th> Team </th>  </tr>
+<c:forEach items="${player}" var="player">
+<tr>
+<td> ${player.playerId}</td>
+<td> ${player.playerName} </td>
+<td> ${player.playerTeam} </td>
+</tr>
+</c:forEach>
+</table>
+
+<center>
+<form action="home">
+<input type="submit" value="return to lobby">
+</form>
+</center>
+
+</body>
+</html>
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+---------Display main entry--------
+
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Search Directory</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: red;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: yellow;
+color: black;
+}
+</style>
+</head>
+<body bgcolor="#8ac221">
+<br>
+<center>
+<div style="background-color: purple">
+<font face="Trebuchet MS" size="8" color="white">Welcome to Searching</font>
+</div>
+<br>
+<div style="background-color: white;width: 550px;height: 480px">
+<br><br>
+
+<br><br>
+<form action="searchPlayerByIdPage">
+<input type="submit" value="    ID   ">
+</form>
+<form action="searchPlayerByNamePage">
+<input type="submit" value="Player Name">
+</form>
+<form action="searchPlayerByTeamPage">
+<input type="submit" value="     GameType     ">
+</form>
+</div>
+</center>
+</body>
+</html>
+
+---------------------------------------------------------------------------------------------------------------------------
+
+----------Search by id---------------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Search Directory</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: purple;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: white;
+color: black;
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+</head>
+<body bgcolor="#7c29c4">
+<br>
+<center>
+<div style="background-color: #66654b">
+<font face="Trebuchet MS" size="8" color="white">Search By ID</font>
+</div>
+<div style="background-color: white;width: 550px;height: 450px">
+<br><br><br>
+<font face="Trebuchet MS" size="5">Enter Player ID</font>
+
+<form action="searchPlayerById">
+<br>
+<input type="text" name="playerId" >
+<br>
+<input type="submit" value="Search">
+</form>
+</div>
+</body>
+</html>
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+------Search player by name---------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Search Directory</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: purple;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: white;
+color: black;
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+</head>
+<body bgcolor="#e62767">
+<br>
+<center>
+<div style="background-color: #9c971c">
+<font face="Trebuchet MS" size="8" color="white">Search By Name</font>
+</div>
+<div style="background-color: white;width: 550px;height: 450px">
+<br><br><br>
+<font face="Trebuchet MS" size="5">Enter Player Name</font>
+
+<form action="searchPlayerByName">
+<br>
+<input type="text" name="playerName">
+<br>
+<input type="submit" value="Search">
+</form>
+</div>
+</body>
+</html>
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+----------Search player by team----------
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Search Directory</title>
+<style type="text/css">
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: navy;
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: white;
+color: black;
+}
+</style>
+</head>
+<body bgcolor="#6b0427">
+<br>
+<center>
+<div style="background-color: #cf5819">
+<font face="Trebuchet MS" size="8" color="white">Select a Team</font>
+</div>
+<div style="background-color: white;width: 550px;height: 200px">
+	<br><br><br>
+<form action="searchPlayerByTeam">
+<input type="text" name="playerTeam">
+
+<input type="submit" value="Search">
+</form>
+</div>
+</body>
+</html>
+
+------------------------------------------------------------------------------------------------------------------
+
+--------players found after searching----------
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Player Created</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: white;
+border-color: white;
+border-width: 2px solid black;
+text-decoration: none;
+color: black;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: black;
+color: white;
+}
+</style>
+</head>
+<body bgcolor="black">
+<center>
+<br><br><br><br>
+<font face="Trebuchet MS" size="6" color="white"><b>Player Created Successfully...!</b></font>
+<br><br>
+<form action="home">
+<input type="submit" value="return to lobby">
+</form>
+
+</center>
+</body>
+</html>
+
+-------------------------------------------------------------------------------------------------------------------------
+
+------Update main entry(by id)------
+
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Update Player</title>
+<style type="text/css">
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: orange;
+
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: red;
+color: green;
+}
+</style>
+
+</head>
+<body bgcolor="navy">
+<br>
+<center>
+<div style="background-color: pink">
+<font face="Trebuchet MS" size="8" color="white">Update Old Player By</font>
+</div>
+<br>
+<div style="background-color: white;width: 550px;height: 440px">
+	<br><br>
+<form action="searchForUpdate">
+<font face="Trebuchet MS">Player ID:</font><br><input type="text" name="playerId" value="${player.playerId}">
+<br>
+<input type="submit" value="Search">
+</form>
+<br>
+<font face="Trebuchet MS">Update by Name</font>
+<form action="updatePlayer">
+<br>
+<font face="Trebuchet MS">Name:</font><input type="text" name="playerName"  value="${player.playerName}">
+<br>
+<font face="Trebuchet MS">Team:</font><input type="text" name="playerTeam"  value="${player.playerTeam}">
+<br>
+<input type="submit" value="Update Player">
+</form>
+</div>
+</body>
+</html>
+
+----------------------------------------------------------------------------------------------------------------------------------------
+------update results(success)----------------
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+	<title>Player Update</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: white;
+border-color: white;
+border-width: 2px solid black;
+text-decoration: none;
+color: black;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: black;
+color: white;
+}
+</style>
+</head>
+<body bgcolor="#bab327">
+<center>
+<br><br><br><br>
+<font face="Trebuchet MS" size="6" color="white"><b>Its Done perfectly</b></font>
+<br><br>
+<form action="home">
+<input type="submit" value="return to lobby">
+</form>
+
+</center>
+</body>
+</html>
+
+================================================================================================================================
+----Hybernate.cfg.xml-----
+
+
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>        
+  <session-factory>
+    <property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
+    <property name="show_sql">true</property>
+    <property name="hibernate.connection.pool_size">1</property>
+    <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+    <property name="hbm2ddl.auto">update</property>
+
+    <mapping class="com.pack.apps.demo.Player"/>
+
+  </session-factory>
+</hibernate-configuration>
+
+=======================================================================================================================================
