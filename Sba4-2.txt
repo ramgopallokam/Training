@@ -1,0 +1,962 @@
+                                      Sba4_2
+==============================================================================================================
+
+------Main Class Employee-----
+
+package com.sba.task.model;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class Employee {
+@Id
+int userId;
+String userName;
+String password;
+String secQue;
+String secAns;
+public int getUserId() {
+return userId;
+}
+public void setUserId(int userId) {
+this.userId = userId;
+}
+public String getUserName() {
+return userName;
+}
+public void setUserName(String userName) {
+this.userName = userName;
+}
+public String getPassword() {
+return password;
+}
+public void setPassword(String password) {
+this.password = password;
+}
+public String getSecQue() {
+return secQue;
+}
+public void setSecQue(String secQue) {
+this.secQue = secQue;
+}
+public String getSecAns() {
+return secAns;
+}
+public void setSecAns(String secAns) {
+this.secAns = secAns;
+}
+@Override
+public String toString() {
+return "Employee [userId=" + userId + ", userName=" + userName + ", password=" + password + ", secQue=" + secQue
++ ", secAns=" + secAns + "]";
+}
+public Employee(int userId, String userName, String password, String secQue, String secAns) {
+super();
+this.userId = userId;
+this.userName = userName;
+this.password = password;
+this.secQue = secQue;
+this.secAns = secAns;
+}
+public Employee()
+{
+
+}
+
+}
+=============================================================================================================
+
+EmployeeDao
+
+package com.sba.task.dao;
+
+import java.util.List;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sba.task.model.Employee;
+@Component
+@Transactional
+public class EmployeeDao {
+@Autowired
+SessionFactory factory;
+
+public EmployeeDao() {
+
+}
+public EmployeeDao(SessionFactory factory) {
+super();
+this.factory=factory;
+}
+
+public String saveEmployee(Employee employee) {
+
+try {
+Session session=factory.getCurrentSession();
+session.save(employee);
+return "Employee Created now";
+}
+catch (Exception e) {
+// TODO: handle exception
+e.printStackTrace();
+}
+return "Cannot Create Employee";
+}
+//This is for evaluating logindetails are correct or not and transform to the next page
+public String evaluate(String userName, String password) {
+//Employee employee=null;
+try {
+Session session=factory.getCurrentSession();
+Query query=session.createQuery("from Employee a where a.userName=:userName AND a.password=:password");
+query.setParameter("userName", userName);
+   query.setParameter("password", password);
+ List results=query.list();
+if ((results!=null) && (results.size()>0)){
+           return "success";
+       }
+       else {
+       return "Invalid Login details";
+}
+}
+catch (Exception e) {
+// TODO: handle exception
+e.printStackTrace();
+}
+return "Invalid login";
+}
+
+public Employee getUserInfo(int userId) {
+	try {
+	 Employee employee = null;
+	 Session session=factory.getCurrentSession();
+	employee = ( Employee) session.get( Employee.class, userId);
+	System.out.println("User Data : "+employee);
+	
+	return employee;
+}
+	catch (Exception e) {
+		e.printStackTrace();
+	}
+	return null;	
+}
+
+public Employee getSecInfo(int userId) {
+	Employee employee = null;
+	Session session=factory.getCurrentSession();
+	employee = (Employee) session.get(Employee.class, userId);
+	return employee;
+	
+}
+
+public void changePassword(String password,int userId) {
+	Employee employee = null;	
+	employee = getSecInfo(userId);
+	employee.setPassword(password);
+
+Session session=factory.getCurrentSession();
+	
+		session.update(employee);
+}
+
+
+
+}
+============================================================================================================
+
+Employee Controller 
+package com.sba.task;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.sba.task.dao.EmployeeDao;
+import com.sba.task.model.Employee;
+
+@Controller
+public class EmployeeController {
+@Autowired
+EmployeeDao dao;
+
+@RequestMapping(value="/")
+public String home()
+   {
+return "home";
+ }
+
+@RequestMapping(value = "/home")
+public String homee(Model model) {
+	return "home";
+}
+
+
+@RequestMapping(value="/display")
+public String display(Model model,@ModelAttribute Employee employee) {
+String status=dao.saveEmployee(employee);
+model.addAttribute("status", status);
+return "success";
+}
+
+
+
+
+@RequestMapping(value = "/newuser")
+public String createNewUser(Model model) {
+	return "newuser";
+}
+
+@RequestMapping(value = "/validatepass")
+public String createNewPassword(Model model) {
+	return "validtaepass";
+}
+
+@RequestMapping(value="/evaluatelogin")
+public String evaluatelogin(Model model,@RequestParam("userName") String userName,@RequestParam("password") String password)
+{
+String status1=dao.evaluate(userName,password);
+model.addAttribute("status1",status1);
+return "output1";
+}
+
+
+
+@RequestMapping(value="/evaluatesecurity")
+public String getSec(@RequestParam("userId") int userId,@RequestParam("secQue") String secQue,
+@RequestParam("secAns") String secAns,Model model) {
+Employee employee = null;
+
+employee = dao.getUserInfo(userId);
+
+if (secQue.equals(employee.getSecQue()) && secAns.equals(employee.getSecAns())) {
+model.addAttribute("userId", userId);
+System.out.println("correct");
+return "Changepass";
+}
+model.addAttribute("message", "Login Failed Please Enter Valid User Info");
+System.out.println(secQue);
+System.out.println("wrong");
+return "Changepass";
+}
+
+
+
+@RequestMapping("/forgotpass")
+public String getsecInfo() {
+	return "forgotpassword";
+ 
+}
+@RequestMapping("/changepass")
+public String changpass(@RequestParam String password, @RequestParam String conformPass,@RequestParam("userid") int userId) {
+	System.out.println("userId : "+userId);
+	if(password.equals(conformPass)) {
+		dao.changePassword(password,userId);
+		return "success2";
+	}
+	return "ChangePass";
+}
+
+}
+=====================================================================================================
+
+Config Class
+
+package com.sba.task;
+
+import javax.persistence.EntityManagerFactory;
+
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+@EnableTransactionManagement
+@Configuration
+public class ConfigClass {
+@Autowired
+EntityManagerFactory entityManagerFactory;
+
+@Bean
+public SessionFactory getSessionFactory(){
+return entityManagerFactory.unwrap(SessionFactory.class);
+}
+}
+
+============================================================================================================
+
+Sbatask2Application.java
+
+package com.sba.task;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Sbatask2Application {
+
+public static void main(String[] args) {
+SpringApplication.run(Sbatask2Application.class, args);
+}
+
+}
+==========================================================================================================
+ ------Jsp files-----
+
+home.jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Welcome</title>
+
+<meta charset="ISO-8859-1">
+
+<title>Insert title here</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("welcome.jpg");
+background-repeat: no-repeat;
+background-size: cover;
+
+}
+</style>
+
+</head>
+<body >
+<center>
+<div class="form-group">
+<form  class="form-horizontal" action="evaluatelogin">
+<i class="glyphicon glyphicon-user"></i>Enter userName:<input type="text" name="userName">
+<br>
+<i class="glyphicon glyphicon-user"></i>Enter Password:<input type="password" name="password">
+<br>
+<button type="submit" class="btn">Login</button>
+</form>
+
+<form action="newuser">
+ <button type="submit" class="btn">Register</button>
+</form>
+
+<form action="validatepass">
+ <button type="submit" class="btn">forgot password</button>
+</form>
+</div>
+</center>
+</body>
+</html>
+--------------------------------------------------------------------------------------------------
+
+Registration(new user.jsp)
+
+
+output1
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+input[type=button] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("reg.jpg");
+background-repeat: no-repeat;
+background-size: auto;
+
+}
+</style>
+</head>
+<body>
+<center>
+<div>
+<form action="display">
+Enter Id:<input type="text" name="userId">
+<br>
+Enter Name:<input type="text" name="userName">
+<br>
+Enter Pass:<input type="password" name="password">
+<br>
+
+Choose a Secur Que:
+<select>
+    <option value="where are you born?">where are you born?</option>
+    <option value="which is your favorite city?">which is your favorite city?</option>
+    <option value="where did you completed your schooling?">where did you completed your schooling?</option>
+    <option value="what is your favorite food?">what is your favorite food?</option>
+  </select>
+  <br>
+
+Enter Sec Ans:<input type="text" name="secAns">
+<br>
+<button type="submit" class="btn">Register</button>
+</form>
+</div>
+</center>
+</body>
+
+-------------------------------------------------------------------------------------------------------
+----output----(employee-created)
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("cloud.jpg");
+background-repeat: no-repeat;
+background-size: auto;
+
+}
+</style>
+</head>
+<body>
+<h1>
+Employee created
+
+</h1>
+
+</form>
+</body>
+
+----------------------------------------------------------------------------------------------------------------
+ for logging in (output1.jsp)
+
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("cloud.jpg");
+background-repeat: no-repeat;
+background-size: cover;
+
+}
+</style>
+</head>
+<body>
+<h1>
+Yaay :) Successfully Logged in
+<p>${status1}</p>
+</h1>
+</form>
+</body>
+
+-------------------------------------------------------------------------------------------------------------
+
+Successfully registered(success.jsp)
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("happy.jpg");
+background-repeat: no-repeat;
+background-size: auto;
+
+}
+</style>
+</head>
+<body>
+<p> Woohoo...! Successfully Registered </p>
+<form action="home">
+<button type="submit" class="btn">return home</button>
+</form>
+</body>
+----------------------------------------------------------------------------------------------
+
+Successfully Updated(success.2)
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("tips.jpg");
+background-repeat: no-repeat;
+background-size: auto;
+
+}
+</style>
+</head>
+<body>
+<p> Successfully Changed </p>
+<form action="home">
+<input type="submit" value="return home">
+</form>
+</body>
+----------------------------------------------------------------------------------------------------------------
+
+ Valid details for updating password
+(validate.jsp)
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="false" %>
+<html>
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+input[type=submit] {
+font-family: Trebuchet MS;
+background-color: #eb5e5e;			
+border-color: black;
+border-width: 2px solid black;
+text-decoration: none;
+color: white;
+padding: 10px 60px;
+margin: 20px 20px;
+cursor: pointer;
+}
+input[type=submit]:hover {
+background-color: Beige;
+color: orange;
+}
+}
+input[type=text], select {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style type="text/css">
+body
+{
+background-image: url("think.jpg");
+background-repeat: no-repeat;
+background-size: cover;
+
+}
+</style>
+</head>
+<body>
+<div class="form-group">
+<form  class="form-horizontal" action="evaluatesecurity">
+<i class="glyphicon glyphicon-user"></i>Enter userId:<input type="text" name="userId">
+<br>
+Choose a Sec Que:
+<select name="secQue">
+ <option value="where are you born?">where are you born?</option>
+ <option value="which is your favorite city?">which is your favorite city?</option>
+ <option value="where did you completed your schooling?">where did you completed your schooling?</option>
+ <option value="what is your favorite food?">what is your favorite food?</option>
+</select>
+<br>
+Enter Sec Ans:<input type="text" name="secAns">
+<br>
+<input type="submit">
+</form>
+</div>
+</body>
+-------------------------------------------------------------------------------------------------------
+
+Changing password(Changepass.jsp)
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<style type="text/css">
+body
+{
+background: url("forgot.jpg");
+background-repeat: no-repeat;
+background-size: 55%;
+opacity: 0.6;
+}
+
+</style>
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Add icon library -->
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+body {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+.input-container {
+	display: -ms-flexbox; /* IE10 */
+	display: flex;
+	width: 100%;
+	margin-bottom: 15px;
+}
+
+.icon {
+	padding: 10px;
+	background: dodgerblue;
+	color: white;
+	min-width: 50px;
+	text-align: center;
+}
+
+.input-field {
+	width: 100%;
+	padding: 10px;
+	outline: none;
+}
+
+.input-field:focus {
+	border: 2px solid dodgerblue;
+}
+
+/* Set a style for the submit button */
+.btn {
+	background-color: dodgerblue;
+	color: white;
+	padding: 15px 20px;
+	border: none;
+	cursor: pointer;
+	width: 100%;
+	opacity: 0.9;
+}
+
+.btn:hover {
+	opacity: 1;
+}
+</style>
+<script type="text/javascript">
+	
+</script>
+</head>
+<body>
+
+
+<h2>${userId}</h2>
+	<form action="changepass" method="get">
+		style="max-width: 300px; margin: auto">
+		<center>
+			<h2 style="color: powderblue">CHANGE PASSWORD</h2>
+		</center>
+		<div class="input-container">
+    
+    <input class="input-field" type="hidden" placeholder="User Id" name="userid"  value="${userId}" onkeypress ="test(event)" required>
+  </div>
+		
+		<div class="input-container">
+			<i class="fa fa-key icon"></i> <input class="input-field"
+				type="password" placeholder="Password" name="password" required>
+		</div>
+		<div class="input-container">
+			<i class="fa fa-key icon"></i> <input class="input-field"
+				type="password" placeholder="Conform Password" name="conformPass"
+				required>
+		</div>
+		<button type="submit" class="btn">Login</button>
+	</form>
+	
+</body>
+</html>
+===========================================================================================================
+pom.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<groupId>dxcresthib</groupId>
+<artifactId>Dxc-RestHib</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>Dxc-RestHib</name>
+<description>Demo project for Spring Boot</description>
+
+
+    <properties>
+        <start-class>spring-boot-example.Application</start-class>
+    </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.1.RELEASE</version>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+           
+        </dependency>
+        <dependency>
+<groupId>jstl</groupId>
+<artifactId>jstl</artifactId>
+<version>1.2</version>
+</dependency>
+       
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+<!-- https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-jasper -->
+<dependency>
+    <groupId>org.apache.tomcat</groupId>
+    <artifactId>tomcat-jasper</artifactId>
+    <version>8.5.11</version>
+</dependency>
+
+
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
+==========================================================================================================
